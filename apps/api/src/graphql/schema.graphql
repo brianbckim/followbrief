@@ -1,0 +1,259 @@
+scalar DateTime
+scalar JSON
+
+type Query {
+  viewer: User!
+  workspace(id: ID!): Workspace!
+  assistantThread(id: ID!): AssistantThread!
+  workflowRun(id: ID!): WorkflowRun!
+  pendingApprovals(workspaceId: ID!): [ApprovalRequest!]!
+  sourceItems(workspaceId: ID!, query: String): [SourceItem!]!
+  productHealth(workspaceId: ID!): ProductHealth!
+}
+
+type Mutation {
+  sendAssistantMessage(input: SendAssistantMessageInput!): AssistantTurnPayload!
+  startWorkflowRun(runId: ID!): WorkflowRun!
+  approveAction(approvalId: ID!, note: String): ApprovalRequest!
+  rejectAction(approvalId: ID!, reason: String!): ApprovalRequest!
+  editEmailDraft(input: EditEmailDraftInput!): EmailDraft!
+  retryWorkflowStep(stepId: ID!): WorkflowStep!
+  cancelWorkflowRun(runId: ID!): WorkflowRun!
+}
+
+type Subscription {
+  workflowRunUpdated(runId: ID!): WorkflowRunEvent!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type Workspace {
+  id: ID!
+  name: String!
+  assistantThreads: [AssistantThread!]!
+  recentRuns: [WorkflowRun!]!
+}
+
+type AssistantThread {
+  id: ID!
+  title: String!
+  messages: [AssistantMessage!]!
+  latestRun: WorkflowRun
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AssistantMessage {
+  id: ID!
+  role: MessageRole!
+  content: String!
+  createdAt: DateTime!
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+type WorkflowRun {
+  id: ID!
+  goal: String!
+  status: WorkflowRunStatus!
+  thread: AssistantThread!
+  steps: [WorkflowStep!]!
+  sourceItems: [SourceItem!]!
+  emailDrafts: [EmailDraft!]!
+  createdTasks: [Task!]!
+  approvals: [ApprovalRequest!]!
+  events: [WorkflowRunEvent!]!
+  toolInvocations: [ToolInvocation!]!
+  createdAt: DateTime!
+  startedAt: DateTime
+  completedAt: DateTime
+}
+
+type WorkflowStep {
+  id: ID!
+  index: Int!
+  title: String!
+  toolName: ToolName!
+  status: WorkflowStepStatus!
+  input: JSON
+  output: JSON
+  error: JSON
+  attemptCount: Int!
+  startedAt: DateTime
+  completedAt: DateTime
+}
+
+enum WorkflowRunStatus {
+  DRAFT
+  QUEUED
+  RUNNING
+  WAITING_FOR_APPROVAL
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum WorkflowStepStatus {
+  PENDING
+  RUNNING
+  WAITING_FOR_APPROVAL
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
+enum ToolName {
+  DOCUMENTS_SEARCH
+  DOCUMENTS_SUMMARIZE
+  EMAIL_DRAFT
+  TASKS_CREATE
+}
+
+type SourceItem {
+  id: ID!
+  kind: SourceItemKind!
+  title: String!
+  body: String!
+  contactName: String
+  contactEmail: String
+  companyName: String
+  createdAt: DateTime!
+}
+
+enum SourceItemKind {
+  MEETING_NOTE
+  EMAIL_SNIPPET
+  CRM_NOTE
+}
+
+type EmailDraft {
+  id: ID!
+  recipientName: String!
+  recipientEmail: String!
+  subject: String!
+  body: String!
+  status: EmailDraftStatus!
+  sourceRun: WorkflowRun!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum EmailDraftStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+}
+
+type Task {
+  id: ID!
+  title: String!
+  description: String
+  status: TaskStatus!
+  dueDate: DateTime
+  sourceRun: WorkflowRun!
+  createdAt: DateTime!
+}
+
+enum TaskStatus {
+  TODO
+  DONE
+}
+
+type ApprovalRequest {
+  id: ID!
+  status: ApprovalStatus!
+  riskLevel: RiskLevel!
+  title: String!
+  preview: JSON!
+  step: WorkflowStep!
+  emailDraft: EmailDraft
+  decisionNote: String
+  createdAt: DateTime!
+  decidedAt: DateTime
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+type WorkflowRunEvent {
+  id: ID!
+  type: WorkflowRunEventType!
+  message: String!
+  run: WorkflowRun!
+  step: WorkflowStep
+  approval: ApprovalRequest
+  payload: JSON
+  createdAt: DateTime!
+}
+
+enum WorkflowRunEventType {
+  RUN_QUEUED
+  RUN_STARTED
+  STEP_STARTED
+  STEP_COMPLETED
+  APPROVAL_REQUESTED
+  APPROVAL_APPROVED
+  APPROVAL_REJECTED
+  STEP_FAILED
+  RUN_SUCCEEDED
+  RUN_FAILED
+}
+
+type ToolInvocation {
+  id: ID!
+  toolName: ToolName!
+  provider: String!
+  model: String
+  promptVersion: String
+  input: JSON!
+  output: JSON
+  rawResponsePreview: String
+  error: JSON
+  latencyMs: Int
+  attemptCount: Int!
+  createdAt: DateTime!
+  completedAt: DateTime
+  step: WorkflowStep!
+}
+
+type ProductHealth {
+  runsLast24h: Int!
+  successRateLast24h: Float!
+  failedStepsLast24h: Int!
+  p95StepLatencyMs: Int
+  mostCommonFailure: String
+}
+
+input SendAssistantMessageInput {
+  threadId: ID!
+  content: String!
+}
+
+type AssistantTurnPayload {
+  message: AssistantMessage!
+  assistantMessage: AssistantMessage!
+  run: WorkflowRun!
+}
+
+input EditEmailDraftInput {
+  emailDraftId: ID!
+  subject: String!
+  body: String!
+}

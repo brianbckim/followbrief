@@ -1,0 +1,14 @@
+{
+  "goal": "Broken Acme follow-up",
+  "userVisibleSummary": "This fixture is intentionally invalid.",
+  "steps": [
+    {
+      "clientStepId": "unknown",
+      "title": "Do something unsupported",
+      "toolName": "calendar.send",
+      "input": {},
+      "dependsOn": [],
+      "userVisibleReason": "Invalid tool for tests."
+    }
+  ]
+}

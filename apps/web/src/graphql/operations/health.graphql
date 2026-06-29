@@ -1,0 +1,9 @@
+query ProductHealth($workspaceId: ID!) {
+  productHealth(workspaceId: $workspaceId) {
+    runsLast24h
+    successRateLast24h
+    failedStepsLast24h
+    p95StepLatencyMs
+    mostCommonFailure
+  }
+}

@@ -1,0 +1,85 @@
+query AssistantConsoleData($workspaceId: ID!, $threadId: ID!) {
+  viewer {
+    id
+    name
+    email
+  }
+  workspace(id: $workspaceId) {
+    id
+    name
+    recentRuns {
+      id
+      goal
+      status
+      createdAt
+    }
+  }
+  assistantThread(id: $threadId) {
+    id
+    title
+    messages {
+      id
+      role
+      content
+      createdAt
+    }
+    latestRun {
+      ...WorkflowRunTimeline
+    }
+  }
+  sourceItems(workspaceId: $workspaceId) {
+    id
+    kind
+    title
+    body
+    contactName
+    contactEmail
+    companyName
+    createdAt
+  }
+  pendingApprovals(workspaceId: $workspaceId) {
+    id
+    title
+    status
+    riskLevel
+    emailDraft {
+      id
+      recipientName
+      subject
+    }
+  }
+}
+
+mutation SendAssistantMessage($input: SendAssistantMessageInput!) {
+  sendAssistantMessage(input: $input) {
+    message {
+      id
+      role
+      content
+      createdAt
+    }
+    assistantMessage {
+      id
+      role
+      content
+      createdAt
+    }
+    run {
+      ...WorkflowRunTimeline
+    }
+  }
+}
+
+subscription WorkflowRunUpdated($runId: ID!) {
+  workflowRunUpdated(runId: $runId) {
+    id
+    type
+    message
+    payload
+    createdAt
+    step {
+      id
+      title
+    }
+  }
+}

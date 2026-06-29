@@ -1,0 +1,70 @@
+{
+  "goal": "Find last week's Acme meeting notes, draft a follow-up email to Sarah, and create next-step tasks for the team.",
+  "userVisibleSummary": "I will look up the Acme notes, summarize the implementation context, create team tasks, and prepare a follow-up email for your review.",
+  "steps": [
+    {
+      "clientStepId": "find-acme-context",
+      "title": "Find relevant Acme context",
+      "toolName": "documents.search",
+      "input": {
+        "query": "Acme Sarah implementation timeline API onboarding risks",
+        "companyName": "Acme Corp",
+        "limit": 5
+      },
+      "dependsOn": [],
+      "userVisibleReason": "The email and tasks should be grounded in the latest Acme notes."
+    },
+    {
+      "clientStepId": "summarize-context",
+      "title": "Summarize Acme implementation context",
+      "toolName": "documents.summarize",
+      "input": {
+        "sourceItemIds": [],
+        "focus": "Implementation timeline, open questions, onboarding risk, and next steps for Sarah Kim at Acme Corp."
+      },
+      "dependsOn": ["find-acme-context"],
+      "userVisibleReason": "A concise summary helps keep the follow-up accurate and customer-specific."
+    },
+    {
+      "clientStepId": "create-team-tasks",
+      "title": "Create next-step tasks",
+      "toolName": "tasks.create",
+      "input": {
+        "tasks": [
+          {
+            "title": "Confirm Acme technical owner",
+            "description": "Ask Sarah who will own API setup and implementation coordination on the Acme side.",
+            "dueInDays": 2
+          },
+          {
+            "title": "Send Acme implementation timeline",
+            "description": "Share a concise rollout timeline with milestones, API setup, and onboarding checkpoints.",
+            "dueInDays": 3
+          },
+          {
+            "title": "Prepare onboarding risk checklist",
+            "description": "List the main setup risks and mitigation steps before the next Acme meeting.",
+            "dueInDays": 5
+          }
+        ]
+      },
+      "dependsOn": ["summarize-context"],
+      "userVisibleReason": "The team needs clear ownership after the meeting."
+    },
+    {
+      "clientStepId": "draft-sarah-email",
+      "title": "Draft Sarah's follow-up email",
+      "toolName": "email.draft",
+      "input": {
+        "recipientName": "Sarah Kim",
+        "recipientEmail": "sarah@acme.example",
+        "companyName": "Acme Corp",
+        "purpose": "Recap the implementation conversation, share next steps, and confirm the technical owner.",
+        "sourceItemIds": [],
+        "tone": "concise, warm, and action-oriented"
+      },
+      "dependsOn": ["summarize-context", "create-team-tasks"],
+      "userVisibleReason": "The customer-facing draft should be reviewed before it is finalized."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "followbrief",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "concurrently -k -n api,worker,web -c cyan,magenta,green \"pnpm dev:api\" \"pnpm dev:worker\" \"pnpm dev:web\"",
+    "dev:web": "pnpm --filter @followbrief/web dev",
+    "dev:api": "pnpm --filter @followbrief/api dev",
+    "dev:worker": "pnpm --filter @followbrief/api dev:worker",
+    "db:migrate": "pnpm --filter @followbrief/api db:migrate",
+    "db:generate": "pnpm --filter @followbrief/api db:generate",
+    "db:seed": "pnpm --filter @followbrief/api db:seed",
+    "codegen": "pnpm --filter @followbrief/web codegen",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @followbrief/api test",
+    "test:e2e": "pnpm --filter @followbrief/web test:e2e",
+    "capture:demo": "pnpm --filter @followbrief/web capture:demo",
+    "capture:demo:fresh": "pnpm --filter @followbrief/api db:reset-demo && pnpm capture:demo",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

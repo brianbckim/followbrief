@@ -1,0 +1,18 @@
+{
+  "goal": "Explain deterministic Acme demo mode",
+  "userVisibleSummary": "Demo mode is optimized for the deterministic Acme follow-up scenario. To run the full workflow, try: \"Find last week's Acme meeting notes, draft a follow-up email to Sarah, and create next-step tasks for our team.\"",
+  "steps": [
+    {
+      "clientStepId": "show-demo-context",
+      "title": "Show deterministic demo context",
+      "toolName": "documents.search",
+      "input": {
+        "query": "Acme follow-up demo Sarah meeting notes",
+        "companyName": "Acme Corp",
+        "limit": 1
+      },
+      "dependsOn": [],
+      "userVisibleReason": "The mock provider is intentionally scoped to the seeded Acme follow-up demo."
+    }
+  ]
+}

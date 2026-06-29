@@ -1,0 +1,320 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String        @id @default(cuid())
+  name      String
+  email     String        @unique
+  workspaces Workspace[]  @relation("WorkspaceOwner")
+  workflowRuns WorkflowRun[] @relation("WorkflowRunCreator")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Workspace {
+  id        String            @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  assistantThreads AssistantThread[]
+  sourceItems SourceItem[]
+  workflowRuns WorkflowRun[]
+  tasks     Task[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([ownerId])
+}
+
+model AssistantThread {
+  id          String             @id @default(cuid())
+  workspaceId String
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  title       String
+  messages    AssistantMessage[]
+  workflowRuns WorkflowRun[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([workspaceId, updatedAt])
+}
+
+model AssistantMessage {
+  id            String       @id @default(cuid())
+  threadId      String
+  thread        AssistantThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role          MessageRole
+  content       String
+  workflowRunId String?
+  workflowRun   WorkflowRun? @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+
+  @@index([threadId, createdAt])
+  @@index([workflowRunId])
+}
+
+model SourceItem {
+  id           String       @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  kind         SourceItemKind
+  title        String
+  body         String
+  contactName  String?
+  contactEmail String?
+  companyName  String?
+  metadataJson Json         @default("{}")
+  workflowRuns WorkflowRunSourceItem[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([workspaceId, companyName])
+  @@index([workspaceId, kind])
+}
+
+model WorkflowRun {
+  id          String            @id @default(cuid())
+  workspaceId String
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  threadId    String
+  thread      AssistantThread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  goal        String
+  status      WorkflowRunStatus @default(DRAFT)
+  createdById String
+  createdBy   User             @relation("WorkflowRunCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  messages    AssistantMessage[]
+  steps       WorkflowStep[]
+  sourceItems WorkflowRunSourceItem[]
+  emailDrafts EmailDraft[]
+  tasks       Task[]
+  approvals   ApprovalRequest[]
+  events      WorkflowRunEvent[]
+  toolInvocations ToolInvocation[]
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([threadId, createdAt])
+  @@index([status])
+}
+
+model WorkflowStep {
+  id            String             @id @default(cuid())
+  workflowRunId String
+  workflowRun   WorkflowRun        @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  index         Int
+  title         String
+  toolName      ToolName
+  status        WorkflowStepStatus @default(PENDING)
+  inputJson     Json               @default("{}")
+  outputJson    Json?
+  errorJson     Json?
+  attemptCount  Int                @default(0)
+  emailDrafts   EmailDraft[]
+  tasks         Task[]
+  approvals     ApprovalRequest[]
+  events        WorkflowRunEvent[]
+  toolInvocations ToolInvocation[]
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([workflowRunId, index])
+  @@index([workflowRunId, status])
+}
+
+model WorkflowRunSourceItem {
+  id            String      @id @default(cuid())
+  workflowRunId String
+  workflowRun   WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  sourceItemId  String
+  sourceItem    SourceItem  @relation(fields: [sourceItemId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowRunId, sourceItemId])
+  @@index([sourceItemId])
+}
+
+model EmailDraft {
+  id             String           @id @default(cuid())
+  workflowRunId  String
+  workflowRun    WorkflowRun      @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  workflowStepId String
+  workflowStep   WorkflowStep     @relation(fields: [workflowStepId], references: [id], onDelete: Cascade)
+  recipientName  String
+  recipientEmail String
+  subject        String
+  body           String
+  status         EmailDraftStatus @default(DRAFT)
+  approvals      ApprovalRequest[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([workflowRunId])
+  @@unique([workflowStepId])
+}
+
+model Task {
+  id             String      @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workflowRunId  String
+  workflowRun    WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  workflowStepId String
+  workflowStep   WorkflowStep @relation(fields: [workflowStepId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  status         TaskStatus   @default(TODO)
+  dueDate        DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([workspaceId, status])
+  @@index([workflowRunId])
+  @@index([workflowStepId])
+  @@unique([workflowStepId, title])
+}
+
+model ApprovalRequest {
+  id             String         @id @default(cuid())
+  workflowRunId  String
+  workflowRun    WorkflowRun    @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  workflowStepId String
+  workflowStep   WorkflowStep   @relation(fields: [workflowStepId], references: [id], onDelete: Cascade)
+  emailDraftId   String?
+  emailDraft     EmailDraft?    @relation(fields: [emailDraftId], references: [id], onDelete: SetNull)
+  status         ApprovalStatus @default(PENDING)
+  riskLevel      RiskLevel
+  title          String
+  previewJson    Json           @default("{}")
+  decisionNote   String?
+  createdAt      DateTime       @default(now())
+  decidedAt      DateTime?
+  events         WorkflowRunEvent[]
+
+  @@index([workflowRunId, status])
+  @@index([workflowStepId])
+  @@unique([workflowStepId])
+}
+
+model WorkflowRunEvent {
+  id                String               @id @default(cuid())
+  workflowRunId     String
+  workflowRun       WorkflowRun          @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  workflowStepId    String?
+  workflowStep      WorkflowStep?        @relation(fields: [workflowStepId], references: [id], onDelete: SetNull)
+  approvalRequestId String?
+  approvalRequest   ApprovalRequest?     @relation(fields: [approvalRequestId], references: [id], onDelete: SetNull)
+  type              WorkflowRunEventType
+  message           String
+  payloadJson       Json                 @default("{}")
+  createdAt         DateTime             @default(now())
+
+  @@index([workflowRunId, createdAt])
+  @@index([workflowStepId])
+}
+
+model ToolInvocation {
+  id                String      @id @default(cuid())
+  workflowRunId     String
+  workflowRun       WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  workflowStepId    String
+  workflowStep      WorkflowStep @relation(fields: [workflowStepId], references: [id], onDelete: Cascade)
+  toolName          ToolName
+  provider          String
+  model             String?
+  promptVersion     String?
+  inputJson         Json        @default("{}")
+  outputJson        Json?
+  rawResponsePreview String?
+  errorJson         Json?
+  latencyMs         Int?
+  attemptCount      Int         @default(1)
+  createdAt         DateTime    @default(now())
+  completedAt       DateTime?
+
+  @@index([workflowRunId, createdAt])
+  @@index([workflowStepId])
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum SourceItemKind {
+  MEETING_NOTE
+  EMAIL_SNIPPET
+  CRM_NOTE
+}
+
+enum WorkflowRunStatus {
+  DRAFT
+  QUEUED
+  RUNNING
+  WAITING_FOR_APPROVAL
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum WorkflowStepStatus {
+  PENDING
+  RUNNING
+  WAITING_FOR_APPROVAL
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
+enum ToolName {
+  DOCUMENTS_SEARCH
+  DOCUMENTS_SUMMARIZE
+  EMAIL_DRAFT
+  TASKS_CREATE
+}
+
+enum EmailDraftStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+}
+
+enum TaskStatus {
+  TODO
+  DONE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum WorkflowRunEventType {
+  RUN_QUEUED
+  RUN_STARTED
+  STEP_STARTED
+  STEP_COMPLETED
+  APPROVAL_REQUESTED
+  APPROVAL_APPROVED
+  APPROVAL_REJECTED
+  STEP_FAILED
+  RUN_SUCCEEDED
+  RUN_FAILED
+}

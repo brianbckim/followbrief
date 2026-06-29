@@ -1,0 +1,5 @@
+{
+  "subject": "Acme implementation next steps",
+  "body": "Hi Sarah,\n\nThanks again for the implementation discussion. Based on our notes, the next useful step is to align on a clear rollout timeline and confirm who from Acme will own the technical setup.\n\nHere is the proposed path forward:\n\n1. Confirm Acme's technical owner for API setup and onboarding coordination.\n2. Share a concise implementation timeline with the main setup milestones.\n3. Review the onboarding risk checklist together so we can remove blockers early.\n\nI will also send a short API setup overview so your team has the right expectations before the next working session.\n\nBest,\nDemo User",
+  "rationale": "The draft recaps the meeting, names the open ownership question, and keeps the requested timeline and onboarding risks visible."
+}

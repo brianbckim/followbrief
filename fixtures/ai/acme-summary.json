@@ -1,0 +1,14 @@
+{
+  "summary": "Acme is evaluating implementation options with Sarah Kim as the main contact. They want a clear timeline, fast onboarding, and practical guidance around API setup. The biggest open item is naming Acme's technical owner so both teams can coordinate the rollout.",
+  "keyPoints": [
+    "Sarah asked for a clear implementation timeline.",
+    "Acme needs to confirm a technical owner.",
+    "API setup and onboarding risks are the highest-priority questions.",
+    "The follow-up should be concise and include timeline, open questions, and next steps."
+  ],
+  "actionItems": [
+    "Confirm Acme's technical owner.",
+    "Send a timeline with onboarding checkpoints.",
+    "Share API setup expectations and risk mitigations."
+  ]
+}

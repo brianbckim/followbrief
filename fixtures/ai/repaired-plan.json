@@ -1,0 +1,33 @@
+{
+  "goal": "Repair Acme follow-up",
+  "userVisibleSummary": "I repaired the plan so it only uses supported FollowBrief tools.",
+  "steps": [
+    {
+      "clientStepId": "find-acme-context",
+      "title": "Find relevant Acme context",
+      "toolName": "documents.search",
+      "input": {
+        "query": "Acme Sarah implementation",
+        "companyName": "Acme Corp",
+        "limit": 5
+      },
+      "dependsOn": [],
+      "userVisibleReason": "Ground the follow-up in Acme notes."
+    },
+    {
+      "clientStepId": "draft-sarah-email",
+      "title": "Draft Sarah's follow-up email",
+      "toolName": "email.draft",
+      "input": {
+        "recipientName": "Sarah Kim",
+        "recipientEmail": "sarah@acme.example",
+        "companyName": "Acme Corp",
+        "purpose": "Recap implementation next steps.",
+        "sourceItemIds": [],
+        "tone": "concise and warm"
+      },
+      "dependsOn": ["find-acme-context"],
+      "userVisibleReason": "The user asked for a reviewed draft."
+    }
+  ]
+}

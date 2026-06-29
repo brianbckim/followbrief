@@ -1,0 +1,63 @@
+query ApprovalQueue($workspaceId: ID!) {
+  pendingApprovals(workspaceId: $workspaceId) {
+    id
+    title
+    status
+    riskLevel
+    preview
+    decisionNote
+    createdAt
+    decidedAt
+    step {
+      id
+      title
+      status
+    }
+    emailDraft {
+      id
+      recipientName
+      recipientEmail
+      subject
+      body
+      status
+      sourceRun {
+        id
+        goal
+        sourceItems {
+          id
+          title
+          body
+          companyName
+        }
+      }
+    }
+  }
+}
+
+mutation ApproveAction($approvalId: ID!, $note: String) {
+  approveAction(approvalId: $approvalId, note: $note) {
+    id
+    status
+    decisionNote
+    decidedAt
+  }
+}
+
+mutation RejectAction($approvalId: ID!, $reason: String!) {
+  rejectAction(approvalId: $approvalId, reason: $reason) {
+    id
+    status
+    decisionNote
+    decidedAt
+  }
+}
+
+mutation EditEmailDraft($input: EditEmailDraftInput!) {
+  editEmailDraft(input: $input) {
+    id
+    subject
+    body
+    status
+    updatedAt
+  }
+}

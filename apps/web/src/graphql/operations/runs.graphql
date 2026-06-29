@@ -1,0 +1,48 @@
+query WorkflowRunDetail($runId: ID!) {
+  workflowRun(id: $runId) {
+    ...WorkflowRunTimeline
+  }
+}
+
+query WorkflowRunInspect($runId: ID!) {
+  workflowRun(id: $runId) {
+    ...WorkflowRunTimeline
+    toolInvocations {
+      id
+      toolName
+      provider
+      model
+      promptVersion
+      input
+      output
+      rawResponsePreview
+      error
+      latencyMs
+      attemptCount
+      createdAt
+      completedAt
+      step {
+        id
+        index
+        title
+        status
+      }
+    }
+  }
+}
+
+mutation RetryWorkflowStep($stepId: ID!) {
+  retryWorkflowStep(stepId: $stepId) {
+    id
+    status
+    attemptCount
+  }
+}
+
+mutation CancelWorkflowRun($runId: ID!) {
+  cancelWorkflowRun(runId: $runId) {
+    id
+    status
+    completedAt
+  }
+}

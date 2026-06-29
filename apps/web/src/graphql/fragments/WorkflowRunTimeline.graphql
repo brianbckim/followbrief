@@ -1,0 +1,78 @@
+fragment WorkflowRunTimeline on WorkflowRun {
+  id
+  goal
+  status
+  createdAt
+  startedAt
+  completedAt
+  steps {
+    id
+    index
+    title
+    toolName
+    status
+    input
+    output
+    error
+    attemptCount
+    startedAt
+    completedAt
+  }
+  events {
+    id
+    type
+    message
+    payload
+    createdAt
+    step {
+      id
+      title
+    }
+  }
+  sourceItems {
+    id
+    kind
+    title
+    body
+    contactName
+    contactEmail
+    companyName
+    createdAt
+  }
+  createdTasks {
+    id
+    title
+    description
+    status
+    dueDate
+    createdAt
+  }
+  emailDrafts {
+    id
+    recipientName
+    recipientEmail
+    subject
+    body
+    status
+    createdAt
+    updatedAt
+  }
+  approvals {
+    id
+    status
+    riskLevel
+    title
+    preview
+    decisionNote
+    createdAt
+    decidedAt
+    emailDraft {
+      id
+      recipientName
+      recipientEmail
+      subject
+      body
+      status
+    }
+  }
+}
